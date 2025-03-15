@@ -1,13 +1,21 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+  // devtools: { enabled: true },
+  components: true,
+
 
   vite: {
     server: {
       strictPort: false,
-      allowedHosts: ['.ngrok-free.app']
+      allowedHosts: ['.ngrok-free.app'],
     }
+  },
+
+  app: {
+    head: {
+      script: [{ src: 'https://telegram.org/js/telegram-web-app.js' }],
+    },
   },
 
   modules: [
@@ -16,6 +24,5 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/icon',
-    '@nuxt/ui',
   ]
 })
