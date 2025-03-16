@@ -1,11 +1,14 @@
+import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
+
 class ServerRequest {
     private static instance: ServerRequest;
-    private baseURL: string;
-    private headers: HeadersInit;
+    private axiosInstance: AxiosInstance;
 
-    private constructor(baseURL: string, headers: HeadersInit) {
-        this.baseURL = baseURL;
-        this.headers = headers;
+    private constructor(baseURL: string, headers: Record<string, string>) {
+        this.axiosInstance = axios.create({
+            baseURL: baseURL,
+            headers: headers
+        });
     }
 
     public static async getInstance(): Promise<ServerRequest> {
@@ -14,7 +17,7 @@ class ServerRequest {
             const { initData } = useWebApp();
 
             const baseURL = 'https://event-planner-api.cloudpub.ru';
-            const headers: HeadersInit = {
+            const headers: Record<string, string> = {
                 'Authorization': `TMiniApp ${initData}`,
                 'Content-Type': 'application/json'
             };
@@ -24,27 +27,26 @@ class ServerRequest {
         return ServerRequest.instance;
     }
 
-    private async request<T>(url: string, options: RequestInit): Promise<T> {
-        const response = await fetch(`${this.baseURL}${url}`, {
-            ...options,
-            headers: {
-                ...this.headers,
-                ...options.headers
+    private async request<T>(url: string, options: AxiosRequestConfig): Promise<T> {
+        try {
+            const response: AxiosResponse<T> = await this.axiosInstance.request<T>({
+                url: url,
+                ...options
+            });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                console.warn("ServerRequest.request", error.response);
+                throw new Error(`HTTP error! status: ${error.response.status}`);
             }
-        });
-
-        if (!response.ok) {
-            console.warn("ServerRequest.request", response);
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw error;
         }
-
-        return response.json();
     }
 
     async post<T>(url: string, data: any): Promise<T> {
         return this.request<T>(url, {
             method: 'POST',
-            body: JSON.stringify(data)
+            data: data
         });
     }
 
@@ -57,7 +59,7 @@ class ServerRequest {
     async delete<T>(url: string, data: any): Promise<T> {
         return this.request<T>(url, {
             method: 'DELETE',
-            body: JSON.stringify(data)
+            data: data
         });
     }
 }
