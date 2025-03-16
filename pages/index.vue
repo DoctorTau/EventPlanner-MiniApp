@@ -2,6 +2,7 @@
 import ServerRequest from '@/utils/server_request'
 import { Icon } from '#components'
 import { useRouter } from 'vue-router';
+import type { EventItem } from '@/components/Event/EventItem';
 
 const calendarIcon = ref('material-symbols:calendar-month');
 
@@ -13,21 +14,26 @@ const { initData, initDataUnsafe } = useWebApp();
 
 const serverRequest = await ServerRequest.getInstance();
 
+const eventItems = ref<EventItem[]>([]);
+
 onMounted(async () => {
   try {
     const response = await serverRequest.post('/api/user/auth', {});
     console.log(response);
+
+    const eventItemsResponse = await serverRequest.get<{ $values: any[] }>('api/Event/getUsersEvents');
+    eventItems.value = eventItemsResponse.$values;
   } catch (error) {
     console.error('Error fetching user data:', error);
   }
 });
-
 
 const router = useRouter();
 
 const goToCalendarPage = () => {
   router.push('/calendar');
 };
+
 
 </script>
 
@@ -42,6 +48,8 @@ const goToCalendarPage = () => {
         <Icon :name="calendarIcon" size="32" />
       </button>
     </div>
+
+    <EventTile v-for="eventItem in eventItems" :key="eventItem.id" :eventItem="eventItem" />
 
   </div>
 </template>

@@ -25,6 +25,7 @@ const formattedDate = computed(() => {
         year: 'numeric', month: 'long', day: 'numeric'
     });
 });
+
 </script>
 
 <style scoped>
