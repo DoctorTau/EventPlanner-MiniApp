@@ -8,17 +8,11 @@
     <div class="calendar">
       <div class="day-label" v-for="day in daysOfWeek" :key="day">{{ day }}</div>
       <div v-for="n in firstDayOffset" :key="'empty-' + n" class="day empty"></div>
-      <div 
-        v-for="day in days" 
-        :key="day.date.toISOString()"
-        class="day"
-        :class="{
-          'current-day': isCurrentDay(day.date),
-          'selected-day': isSelected(day.date),
-          'new-selected-day': isNewSelected(day.date)
-        }"
-        @click="toggleDaySelection(day.date)"
-      >
+      <div v-for="day in days" :key="day.date.toISOString()" class="day" :class="{
+        'current-day': isCurrentDay(day.date),
+        'selected-day': isSelected(day.date),
+        'new-selected-day': isNewSelected(day.date)
+      }" @click="toggleDaySelection(day.date)">
         {{ day.dayNumber }}
       </div>
     </div>
@@ -29,11 +23,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import ServerRequest from '@/utils/server_request';
-const { useWebAppTheme, useWebAppPopup, MainButton } = await import('vue-tg');
-
+const { useWebAppTheme, useWebAppPopup, useWebAppHapticFeedback, useWebAppMainButton, MainButton } = await import('vue-tg');
 
 const { themeParams } = useWebAppTheme();
 const { showAlert } = useWebAppPopup();
+const mainButton = useWebAppMainButton();
+const hapticFeedback = useWebAppHapticFeedback();
 
 const selectedDays = ref<Date[]>([]); // Saved days from server
 const newSelectedDays = ref<Date[]>([]); // Newly selected days by user
@@ -42,6 +37,8 @@ const today = new Date();
 const currentMonth = ref(today.getMonth());
 const currentYear = ref(today.getFullYear());
 const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const loading = ref(false);
 
 onMounted(getAvailability);
 
@@ -67,6 +64,8 @@ const isSelected = (date: Date) => selectedDays.value.some(d => d.toDateString()
 const isNewSelected = (date: Date) => newSelectedDays.value.some(d => d.toDateString() === date.toDateString());
 
 const toggleDaySelection = (date: Date) => {
+  hapticFeedback.impactOccurred('light');
+
   const savedIndex = selectedDays.value.findIndex(d => d.toDateString() === date.toDateString());
   if (savedIndex !== -1) {
     selectedDays.value.splice(savedIndex, 1);
@@ -75,7 +74,7 @@ const toggleDaySelection = (date: Date) => {
   }
 
   const deletedIndex = deletedDays.value.findIndex(d => d.toDateString() === date.toDateString());
-  if(deletedIndex !== -1) {
+  if (deletedIndex !== -1) {
     selectedDays.value.push(date);
     deletedDays.value.splice(deletedIndex, 1);
     return;
@@ -115,13 +114,16 @@ async function getAvailability() {
 
 async function updateSelectedDays() {
   try {
+    mainButton.showMainButtonProgress();
     await saveSelectedDays();
     await deleteSelectedDays();
     await getAvailability(); // Refresh saved data after update
     showAlert('Availability updated successfully');
+    hapticFeedback.impactOccurred('medium');
   } catch (error) {
     console.error('Error updating availability:', error);
   }
+  mainButton.hideMainButtonProgress();
 }
 
 async function saveSelectedDays() {
