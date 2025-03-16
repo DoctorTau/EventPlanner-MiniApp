@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import CalendarComponent from '@/components/CalendarComponent.vue';
+import ServerRequest from '@/utils/server_request'
+import CalendarComponent from '~/components/CalendarComponent.vue';
 
 
 const { MainButton, useWebAppPopup, useWebApp } = await import('vue-tg');
@@ -7,27 +8,21 @@ const { MainButton, useWebAppPopup, useWebApp } = await import('vue-tg');
 const { showAlert } = useWebAppPopup();
 const { initData, initDataUnsafe } = useWebApp();
 
-const handleButtonClick = async () => {
-    try {
-        console.log(`TMiniApp ${initData}`)
+const serverRequest = await ServerRequest.getInstance();
 
-        var myHeaders = new Headers();
-        myHeaders.append("Authorization", `TMiniApp ${initData}`);
-        myHeaders.append("Content-Type", "application/json");
-
-        const response = await fetch('https://localhost:7237/api/User/auth', {
-            method: 'POST',
-            headers: myHeaders,
-            // mode: "no-cors"
-        });
-        const userData = await response.json();
-        showAlert(userData.username);
-        console.log(response.status);
+onMounted(async () => {
+  try {
+      const response = await serverRequest.post('/api/user/auth', {});
+      console.log(response);
     } catch (error) {
-        console.error('Error fetching user data:', error);
+      console.error('Error fetching user data:', error);
     }
-};
+});
 
+
+const handleButtonClick = async () => {
+    
+};
 
 </script>
 
@@ -39,7 +34,7 @@ const handleButtonClick = async () => {
 
     <CalendarComponent />
 
-    <MainButton text="Click me!" @click="handleButtonClick"></MainButton>
+    <!-- <MainButton text="Click me!" @click="handleButtonClick"></MainButton> -->
   </div>
 </template>
 
