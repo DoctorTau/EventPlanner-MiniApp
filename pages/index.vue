@@ -21,8 +21,7 @@ onMounted(async () => {
     const response = await serverRequest.post('/api/user/auth', {});
     console.log(response);
 
-    const eventItemsResponse = await serverRequest.get<{ $values: any[] }>('api/Event/getUsersEvents');
-    eventItems.value = eventItemsResponse.$values;
+    eventItems.value = await serverRequest.get<EventItem[]>('api/Event/getUsersEvents');
   } catch (error) {
     console.error('Error fetching user data:', error);
   }

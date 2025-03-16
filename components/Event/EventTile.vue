@@ -1,5 +1,5 @@
 <template>
-    <div class="event-tile">
+    <div class="event-tile" @click="goToEventDetails">
         <h3 class="title">{{ eventItem.title }}</h3>
         <div class="date-location">
             <p class="date">{{ eventItem.eventDate ? formattedDate : 'TBA' }}</p>
@@ -17,6 +17,13 @@ const props = defineProps({
         required: true
     }
 });
+
+const router = useRouter();
+
+const goToEventDetails = () => {
+    router.push(`/event/${props.eventItem.id}`);
+};
+
 const formattedDate = computed(() => {
     if (!props.eventItem.eventDate) return "No date available";
 
