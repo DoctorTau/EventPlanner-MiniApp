@@ -23,6 +23,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import ServerRequest from '@/utils/server_request';
+import type { AvailabilityData } from './AvailabilityData';
 const { useWebAppTheme, useWebAppPopup, useWebAppHapticFeedback, useWebAppMainButton, MainButton } = await import('vue-tg');
 
 const { themeParams } = useWebAppTheme();
@@ -102,8 +103,8 @@ const nextMonth = () => {
 async function getAvailability() {
   try {
     const serverRequest = await ServerRequest.getInstance();
-    const response = await serverRequest.get<{ $values: any[] }>('/api/user/availability');
-    selectedDays.value = response.$values.map(item => adjustDateForTimezone(new Date(item.availableDate)));
+    const response = await serverRequest.get<AvailabilityData[]>('/api/user/availability');
+    selectedDays.value = response.map(item => adjustDateForTimezone(new Date(item.availableDate)));
     newSelectedDays.value = [];
     deletedDays.value = [];
   } catch (error) {
