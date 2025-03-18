@@ -4,7 +4,12 @@
     <div v-if="eventItem" class="event-container">
         <h1 class="title">{{ eventItem.title }}</h1>
         <p class="description">{{ eventItem.description || "" }}</p>
-        <p class="date"><strong>Date:</strong> {{ formattedDate }}</p>
+        <div class="date-container">
+            <p class="date"><strong>Date:</strong> {{ formattedDate }}</p>
+            <button @click="startDatePoll" v-if="formattedDate === 'No date available'" class="start-date-poll-button">
+                Start date poll
+            </button>
+        </div>
         <p class="location"><strong>Location:</strong> {{ eventItem.location || "No location provided" }}</p>
 
         <h2>Participants</h2>
@@ -15,6 +20,8 @@
         </ul>
         <p v-else>No participants yet.</p>
     </div>
+
+
 </template>
 
 <script setup lang="ts">
@@ -22,7 +29,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import ServerRequest from '@/utils/server_request'
 import type { EventItem } from '@/components/Event/EventItem';
-const { BackButton } = await import('vue-tg');
+const { BackButton, useWebAppTheme } = await import('vue-tg');
+
+const { themeParams } = useWebAppTheme();
 
 const route = useRoute();
 const eventItem = ref<EventItem>();
@@ -50,6 +59,12 @@ const formattedDate = computed(() => {
         year: 'numeric', month: 'long', day: 'numeric'
     });
 });
+
+const startDatePoll = async () => {
+    const serverRequest = await ServerRequest.getInstance();
+
+    await serverRequest.post(`/api/Poll/${route.params.id}/start-date-poll`, {});
+}
 
 onMounted(fetchEvent);
 </script>
@@ -85,5 +100,22 @@ ul {
 li {
     font-size: 0.9em;
     margin-top: 4px;
+}
+
+.start-date-poll-button {
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 1em;
+    background: v-bind('themeParams.button_color');
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.date-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 </style>

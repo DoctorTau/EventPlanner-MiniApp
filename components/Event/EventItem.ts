@@ -6,6 +6,7 @@ export interface Participant {
 }
 
 export interface EventItem {
+    value: EventItem | undefined;
     id: number;
     title: string;
     telegramChatId: number;

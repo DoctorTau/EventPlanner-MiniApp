@@ -38,9 +38,8 @@ const goToCalendarPage = () => {
 
 <template>
   <div>
-    <h1>Welcome to EventPlanner MiniApp</h1>
-    <p>This is the first page of your Nuxt.js application.</p>
-    <p>Hello {{ initDataUnsafe.user?.username }}</p>
+    <h1>EventPlanner MiniApp</h1>
+    <p class="hello">Hello {{ initDataUnsafe.user?.username }}</p>
 
     <div style="display: flex; justify-content: center;">
       <button class="CalendarButton" @click="goToCalendarPage">
@@ -55,7 +54,15 @@ const goToCalendarPage = () => {
 
 <style scoped>
 h1 {
-  color: #2c3e50;
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+}
+
+.hello {
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
 }
 
 .CalendarButton {
