@@ -10,7 +10,12 @@
                 Start date poll
             </button>
         </div>
-        <p class="location"><strong>Location:</strong> {{ eventItem.location || "No location provided" }}</p>
+        <div class="date-container">
+            <p class="location"><strong>Location:</strong> {{ eventItem.location || "No location provided" }}</p>
+            <button @click="openLocationPage" v-if="eventItem.location === null" class="start-date-poll-button">
+                Open location page
+            </button>
+        </div>
 
         <h2>Participants</h2>
         <ul v-if="eventItem.participants.length">
@@ -26,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import ServerRequest from '@/utils/server_request'
 import type { EventItem } from '@/components/Event/EventItem';
 const { BackButton, useWebAppTheme } = await import('vue-tg');
@@ -34,6 +39,7 @@ const { BackButton, useWebAppTheme } = await import('vue-tg');
 const { themeParams } = useWebAppTheme();
 
 const route = useRoute();
+const router = useRouter();
 const eventItem = ref<EventItem>();
 
 const returnToPrevPage = () => {
@@ -64,6 +70,11 @@ const startDatePoll = async () => {
     const serverRequest = await ServerRequest.getInstance();
 
     await serverRequest.post(`/api/Poll/${route.params.id}/start-date-poll`, {});
+}
+
+const openLocationPage = () => {
+    console.log("Open location page");
+    router.push(`/event/${route.params.id}/locations`);
 }
 
 onMounted(fetchEvent);
@@ -117,5 +128,15 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.locations-container {
+    max-width: 600px;
+    margin: 20px auto 0;
+    padding: 20px;
+    border: 2px solid black;
+    border-radius: 12px;
+    background: white;
+    font-family: 'Montserrat', sans-serif;
 }
 </style>

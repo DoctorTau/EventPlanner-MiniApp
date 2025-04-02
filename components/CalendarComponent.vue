@@ -112,13 +112,12 @@ async function getAvailability() {
   }
 }
 
-
 async function updateSelectedDays() {
   try {
     mainButton.showMainButtonProgress();
     await saveSelectedDays();
     await deleteSelectedDays();
-    await getAvailability(); // Refresh saved data after update
+    await getAvailability();
     showAlert('Availability updated successfully');
     hapticFeedback.impactOccurred('medium');
   } catch (error) {

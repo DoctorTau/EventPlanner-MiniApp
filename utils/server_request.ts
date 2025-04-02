@@ -50,6 +50,13 @@ class ServerRequest {
         });
     }
 
+    async put<T>(url: string, data: any): Promise<T> {
+        return this.request<T>(url, {
+            method: 'PUT',
+            data: data
+        });
+    }
+
     async get<T>(url: string): Promise<T> {
         return this.request<T>(url, {
             method: 'GET'

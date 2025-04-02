@@ -1,5 +1,5 @@
 <template>
-    <div class="event-tile" @click="goToEventDetails">
+    <div class="location-tile" @click="goToEventDetails">
         <h3 class="title">{{ eventItem.title }}</h3>
         <div class="date-location">
             <p class="date">{{ eventItem.eventDate ? formattedDate : 'TBA' }}</p>
@@ -36,7 +36,7 @@ const formattedDate = computed(() => {
 </script>
 
 <style scoped>
-.event-tile {
+.location-tile {
     display: flex;
     align-items: center;
     justify-content: space-between;
