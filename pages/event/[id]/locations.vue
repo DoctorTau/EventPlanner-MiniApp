@@ -4,21 +4,23 @@
   <div v-if="eventItem" class="event-container">
     <h1 class="title">Location Poll for: {{ eventItem.title }}</h1>
 
-    <input v-model="newLocation" placeholder="Suggest a location" class="location-input" />
-    <button @click="addLocation" class="start-date-poll-button">Add Location</button>
+    <div v-if="pollItem?.status == PollStatus.Pending">
+      <input v-model="newLocation" placeholder="Suggest a location" class="location-input" />
+      <button @click="addLocation" class="start-date-poll-button">Add Location</button>
+    </div>
 
   </div>
 
   <div class="event-container">
     <h2 class="description">Suggested Locations</h2>
-    <ul v-if="locations.length">
-      <li v-for="location in locations" :key="location">
+    <ul v-if="pollItem?.options.length">
+      <li v-for="location in pollItem?.options" :key="location">
         <LocationTile :locationName="location" />
       </li>
     </ul>
     <p v-else>No locations suggested yet.</p>
   </div>
-  <MainButton @click="startLocationPoll" text="Start poll" />
+  <MainButton v-if="pollItem?.status == PollStatus.Pending" @click="startLocationPoll" text="Start poll" />
 </template>
 
 <script setup lang="ts">
@@ -27,14 +29,19 @@ import { useRoute } from 'vue-router';
 import ServerRequest from '@/utils/server_request';
 import LocationTile from '@/components/Locations/LocationTile.vue';
 import type { EventItem } from '@/components/Event/EventItem';
-import type { PollModel } from '~/components/PollModel';
+import { PollStatus, type PollModel } from '~/components/PollModel';
 const { MainButton, BackButton, useWebAppTheme } = await import('vue-tg');
+
+const { useBackButton } = await import('vue-tg');
+
+const backButton = useBackButton()
+
 
 const { themeParams } = useWebAppTheme();
 const route = useRoute();
 
 const eventItem = ref<EventItem>();
-const locations = ref<string[]>([]);
+const pollItem = ref<PollModel>();
 const newLocation = ref('');
 
 const returnToPrevPage = () => {
@@ -54,8 +61,7 @@ const fetchEvent = async () => {
 const fetchLocations = async () => {
   try {
     const serverRequest = await ServerRequest.getInstance();
-    const locationList = await serverRequest.get<PollModel>(`/api/Poll/${route.params.id}/get-location-poll`);
-    locations.value = locationList.options;
+    pollItem.value = await serverRequest.get<PollModel>(`/api/Poll/${route.params.id}/get-location-poll`);
   } catch (error) {
     console.error('Error loading locations:', error);
   }
@@ -67,7 +73,7 @@ const addLocation = async () => {
   try {
     const serverRequest = await ServerRequest.getInstance();
     await serverRequest.put(`/api/Poll/${route.params.id}/add-location/?location=${newLocation.value}`, {});
-    locations.value.push(newLocation.value);
+    pollItem.value?.options.push(newLocation.value);
     newLocation.value = '';
     await fetchLocations(); // Refresh the list of locations
   } catch (error) {
@@ -78,13 +84,19 @@ const addLocation = async () => {
 const startLocationPoll = async () => {
   try {
     const serverRequest = await ServerRequest.getInstance();
-    await serverRequest.post(`/api/Poll/${route.params.id}/start-location-poll`, {});
+    eventItem.value = await serverRequest.put<EventItem>(`/api/Poll/${pollItem.value?.pollId}/start-poll`, {});
   } catch (error) {
     console.error('Failed to start location poll:', error);
   }
 };
 
-onMounted(fetchEvent);
+onMounted(async () => {
+  await fetchEvent();
+
+  if (backButton.show) {
+    backButton.show();
+  }
+});
 </script>
 
 <style scoped>

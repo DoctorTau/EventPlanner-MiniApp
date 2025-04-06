@@ -34,8 +34,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ServerRequest from '@/utils/server_request'
 import type { EventItem } from '@/components/Event/EventItem';
-const { BackButton, useWebAppTheme } = await import('vue-tg');
-
+const { BackButton, useWebAppTheme, useBackButton } = await import('vue-tg');
+const backButton = useBackButton();
 const { themeParams } = useWebAppTheme();
 
 const route = useRoute();
@@ -77,7 +77,15 @@ const openLocationPage = () => {
     router.push(`/event/${route.params.id}/locations`);
 }
 
-onMounted(fetchEvent);
+onMounted(
+    async () => {
+        await fetchEvent();
+
+        if (backButton.show) {
+            backButton.show();
+        }
+    }
+);
 </script>
 
 <style scoped>
