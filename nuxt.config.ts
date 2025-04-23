@@ -14,7 +14,7 @@ export default defineNuxtConfig({
   vite: {
     server: {
       strictPort: false,
-      allowedHosts: ['.ngrok-free.app'],
+      allowedHosts: ['.cloudpub.ru'],
     }
   },
 

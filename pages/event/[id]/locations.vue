@@ -20,6 +20,7 @@
     </ul>
     <p v-else>No locations suggested yet.</p>
   </div>
+
   <MainButton v-if="pollItem?.status == PollStatus.Pending" @click="startLocationPoll" text="Start poll" />
 </template>
 

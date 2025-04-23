@@ -24,6 +24,9 @@
             </li>
         </ul>
         <p v-else>No participants yet.</p>
+
+
+        <PlanComponent v-if="eventItem" :eventId="eventItem.id" />
     </div>
 
 
@@ -34,6 +37,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ServerRequest from '@/utils/server_request'
 import type { EventItem } from '@/components/Event/EventItem';
+import PlanComponent from '@/components/Plans/PlanComponent.vue';
+
 const { BackButton, useWebAppTheme, useBackButton } = await import('vue-tg');
 const backButton = useBackButton();
 const { themeParams } = useWebAppTheme();
