@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ServerRequest from '@/utils/server_request'
 import type { EventItem } from '@/components/Event/EventItem';
@@ -46,6 +46,8 @@ const { themeParams } = useWebAppTheme();
 const route = useRoute();
 const router = useRouter();
 const eventItem = ref<EventItem>();
+
+const isActive = ref(true);
 
 const returnToPrevPage = () => {
     window.history.back();
@@ -84,6 +86,7 @@ const openLocationPage = () => {
 
 onMounted(
     async () => {
+        isActive.value = true;
         await fetchEvent();
 
         if (backButton.show) {
@@ -91,6 +94,16 @@ onMounted(
         }
     }
 );
+
+onUnmounted(
+    () => {
+        isActive.value = false;
+        setTimeout(() => {
+            if (backButton.hide) {
+                backButton.hide();
+            }
+        }, 0);
+    })
 </script>
 
 <style scoped>

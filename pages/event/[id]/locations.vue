@@ -1,5 +1,5 @@
 <template>
-  <BackButton @click="returnToPrevPage"></BackButton>
+  <BackButtonTg />
 
   <div v-if="eventItem" class="event-container">
     <h1 class="title">Location Poll for: {{ eventItem.title }}</h1>
@@ -31,12 +31,8 @@ import ServerRequest from '@/utils/server_request';
 import LocationTile from '@/components/Locations/LocationTile.vue';
 import type { EventItem } from '@/components/Event/EventItem';
 import { PollStatus, type PollModel } from '~/components/PollModel';
-const { MainButton, BackButton, useWebAppTheme } = await import('vue-tg');
-
-const { useBackButton } = await import('vue-tg');
-
-const backButton = useBackButton()
-
+const { MainButton, useWebAppTheme } = await import('vue-tg');
+import BackButtonTg from '@/components/BackButtonTg.vue';
 
 const { themeParams } = useWebAppTheme();
 const route = useRoute();
@@ -44,10 +40,6 @@ const route = useRoute();
 const eventItem = ref<EventItem>();
 const pollItem = ref<PollModel>();
 const newLocation = ref('');
-
-const returnToPrevPage = () => {
-  window.history.back();
-};
 
 const fetchEvent = async () => {
   try {
@@ -93,10 +85,6 @@ const startLocationPoll = async () => {
 
 onMounted(async () => {
   await fetchEvent();
-
-  if (backButton.show) {
-    backButton.show();
-  }
 });
 </script>
 

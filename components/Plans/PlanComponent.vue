@@ -4,74 +4,42 @@
         <div v-if="loading">
             <LoadingCyrcle></LoadingCyrcle>
         </div>
-        <div v-else class="plan-content" v-html="renderedMarkdown"></div>
+        <div v-else>
+            <div class="plan-column">
+                <div class="plan-content" v-html="renderedMarkdown">
+                </div>
+                <button class="button" @click="editPageRedirect"
+                    :style="{ backgroundColor: themeParams.button_color }">Edit</button>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { marked } from 'marked';
-import ServerRequest from '@/utils/server_request';
+import { useEventPlan } from '@/components/Plans/useEventPlan';
+import { useTheme } from 'vue-tg';
+import { useRouter } from 'vue-router';
+
+const { themeParams } = useTheme();
 
 const props = defineProps({
     eventId: {
         type: Number,
-        required: true
-    }
+        required: true,
+    },
 });
 
-const markdownText = ref('');
-const renderedMarkdown = ref('');
-const loading = ref(true);
+const { renderedMarkdown, loading, fetchMarkdown } = useEventPlan(props.eventId);
 
-const fetchMarkdown = async () => {
-    try {
-        const serverRequest = await ServerRequest.getInstance();
-        var text = await serverRequest.get(`/api/Event/${props.eventId}/getEventPlan`);
-        markdownText.value = text;
-        renderedMarkdown.value = marked.parse(text.replace(/\\n/g, '\n'));
-    } catch (error) {
-        console.error('Error loading event plan:', error);
-        markdownText.value = 'Failed to load event plan.';
-        renderedMarkdown.value = '<p><em>Failed to load event plan.</em></p>';
-    } finally {
-        loading.value = false;
-    }
+onMounted(async () => {
+    await fetchMarkdown();
+});
+
+const editPageRedirect = () => {
+    const router = useRouter();
+    router.push(`/event/${props.eventId}/plan`);
 };
 
-onMounted(
-    async () => {
-        await fetchMarkdown();
-    }
-);
 </script>
 
-<style scoped>
-.plan-container {
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-family: 'Montserrat', sans-serif;
-    background-color: #f9f9f9;
-    max-width: 800px;
-    margin: 20px auto;
-}
-
-.plan-title {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-bottom: 16px;
-}
-
-.plan-content {
-    font-size: 1em;
-    line-height: 1.6;
-}
-
-.loading-spinner {
-    font-size: 1.2em;
-    color: #888;
-    text-align: center;
-    margin: 20px 0;
-}
-</style>
+<style scoped src="@/styles/PlanStyles.css"></style>
