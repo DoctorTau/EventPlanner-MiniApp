@@ -2,8 +2,42 @@
     <BackButton @click="returnToPrevPage"></BackButton>
 
     <div v-if="eventItem" class="event-container">
-        <h1 class="title">{{ eventItem.title }}</h1>
-        <p class="description">{{ eventItem.description || "" }}</p>
+        <div class="header">
+            <h1 class="title">
+                <template v-if="isEditing">
+                    <input v-model="editableTitle" class="edit-input" />
+                </template>
+                <template v-else>
+                    {{ eventItem.title }}
+                </template>
+            </h1>
+            <button @click="toggleEdit" class="edit-button">
+                {{ isEditing ? 'Save' : 'Edit' }}
+            </button>
+        </div>
+
+        <p class="description">
+            <template v-if="isEditing">
+                <textarea v-model="editableDescription" class="edit-textarea"></textarea>
+            </template>
+            <template v-else>
+                {{ eventItem.description || "" }}
+            </template>
+        </p>
+
+        <p class="event-type">
+            <template v-if="isEditing">
+                <select v-model="editableEventType" class="edit-select">
+                    <option v-for="(type, index) in groupEventTypes" :key="index" :value="index">
+                        {{ type }}
+                    </option>
+                </select>
+            </template>
+            <template v-else>
+                {{ groupEventTypes[eventItem.eventType] || "" }}
+            </template>
+        </p>
+
         <div class="date-container">
             <p class="date"><strong>Date:</strong> {{ formattedDate }}</p>
             <button @click="startDatePoll" v-if="formattedDate === 'No date available'" class="start-date-poll-button">
@@ -25,11 +59,8 @@
         </ul>
         <p v-else>No participants yet.</p>
 
-
         <PlanComponent v-if="eventItem" :eventId="eventItem.id" />
     </div>
-
-
 </template>
 
 <script setup lang="ts">
@@ -46,6 +77,12 @@ const { themeParams } = useWebAppTheme();
 const route = useRoute();
 const router = useRouter();
 const eventItem = ref<EventItem>();
+const groupEventTypes = ref<string[]>([]);
+
+const isEditing = ref(false);
+const editableTitle = ref('');
+const editableDescription = ref('');
+const editableEventType = ref(0);
 
 const isActive = ref(true);
 
@@ -58,9 +95,22 @@ const fetchEvent = async () => {
         const serverRequest = await ServerRequest.getInstance();
         const eventResponse = await serverRequest.get<EventItem>(`/api/Event/${route.params.id}`);
         eventItem.value = eventResponse;
-        console.log(eventItem.value.participants);
+        editableTitle.value = eventResponse.title;
+        editableDescription.value = eventResponse.description || '';
+        editableEventType.value = eventResponse.eventType;
     } catch (error) {
         console.error("Error fetching event details:", error);
+    }
+};
+
+const fetchGroupEventTypes = async () => {
+    try {
+        const serverRequest = await ServerRequest.getInstance();
+        const response = await serverRequest.get<{ value: string; displayName: string }[]>(`/api/Event/getEventTypes`);
+        // Convert response to string array with display name
+        groupEventTypes.value = response.map(item => item.displayName);
+    } catch (error) {
+        console.error("Error fetching group event types:", error);
     }
 };
 
@@ -75,35 +125,54 @@ const formattedDate = computed(() => {
 
 const startDatePoll = async () => {
     const serverRequest = await ServerRequest.getInstance();
-
     await serverRequest.post(`/api/Poll/${route.params.id}/start-date-poll`, {});
 }
 
 const openLocationPage = () => {
-    console.log("Open location page");
     router.push(`/event/${route.params.id}/locations`);
 }
 
-onMounted(
-    async () => {
-        isActive.value = true;
-        await fetchEvent();
-
-        if (backButton.show) {
-            backButton.show();
+const toggleEdit = async () => {
+    if (isEditing.value) {
+        // Save mode: Send update request
+        const serverRequest = await ServerRequest.getInstance();
+        try {
+            await serverRequest.put(`/api/Event/${route.params.id}/updateEventDetails`, {
+                title: editableTitle.value,
+                description: editableDescription.value.length == 0 ? null : editableDescription.value,
+                eventType: editableEventType.value
+            });
+            // Update local event data after successful save
+            if (eventItem.value) {
+                eventItem.value.title = editableTitle.value;
+                eventItem.value.description = editableDescription.value;
+                eventItem.value.eventType = editableEventType.value;
+            }
+        } catch (error) {
+            console.error("Error updating event details:", error);
         }
     }
-);
+    isEditing.value = !isEditing.value;
+}
 
-onUnmounted(
-    () => {
-        isActive.value = false;
-        setTimeout(() => {
-            if (backButton.hide) {
-                backButton.hide();
-            }
-        }, 0);
-    })
+onMounted(async () => {
+    isActive.value = true;
+    await fetchEvent();
+    await fetchGroupEventTypes();
+
+    if (backButton.show) {
+        backButton.show();
+    }
+});
+
+onUnmounted(() => {
+    isActive.value = false;
+    setTimeout(() => {
+        if (backButton.hide) {
+            backButton.hide();
+        }
+    }, 0);
+});
 </script>
 
 <style scoped>
@@ -164,5 +233,33 @@ li {
     border-radius: 12px;
     background: white;
     font-family: 'Montserrat', sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-button {
+    padding: 8px 16px;
+    background: v-bind('themeParams.button_color');
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.edit-input,
+.edit-textarea,
+.edit-select {
+    width: 100%;
+    font-size: 1em;
+    padding: 8px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: transparent;
 }
 </style>

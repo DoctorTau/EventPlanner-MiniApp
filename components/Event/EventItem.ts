@@ -11,6 +11,7 @@ export interface EventItem {
     title: string;
     telegramChatId: number;
     description: string;
+    eventType: number;
     eventDate: string | null;
     location: string | null;
     participants: Participant[];
