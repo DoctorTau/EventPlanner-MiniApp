@@ -59,6 +59,16 @@
         </ul>
         <p v-else>No participants yet.</p>
 
+        <div class="tasks" v-if="eventTasks.length">
+            <h2>Tasks</h2>
+            <TaskTile v-for="task in eventTasks" :key="task.id" :taskModel="task"></TaskTile>
+
+            <button @click="openTaskCreateModal" class="big-button">+ Create Task</button>
+        </div>
+
+        <TaskCreate v-if="isTaskCreateModalVisible" :eventId="eventItem.id" @taskCreated="addTask"
+            @close="closeTaskCreateModal" />
+
         <PlanComponent v-if="eventItem" :eventId="eventItem.id" />
     </div>
 </template>
@@ -68,6 +78,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ServerRequest from '@/utils/server_request'
 import type { EventItem } from '@/components/Event/EventItem';
+import type { TaskModel } from '@/components/Task/TaskItem';
 import PlanComponent from '@/components/Plans/PlanComponent.vue';
 
 const { BackButton, useWebAppTheme, useBackButton } = await import('vue-tg');
@@ -78,6 +89,7 @@ const route = useRoute();
 const router = useRouter();
 const eventItem = ref<EventItem>();
 const groupEventTypes = ref<string[]>([]);
+const eventTasks = ref<TaskModel[]>([]);
 
 const isEditing = ref(false);
 const editableTitle = ref('');
@@ -111,6 +123,19 @@ const fetchGroupEventTypes = async () => {
         groupEventTypes.value = response.map(item => item.displayName);
     } catch (error) {
         console.error("Error fetching group event types:", error);
+    }
+};
+
+const fetchTasks = async () => {
+    try {
+        const serverRequest = await ServerRequest.getInstance();
+        const tasksResponse = await serverRequest.get<TaskModel[]>(`/api/Task/event/${route.params.id}`);
+        console.log("Tasks response:", tasksResponse);
+        if (eventTasks.value) {
+            eventTasks.value = tasksResponse;
+        }
+    } catch (error) {
+        console.error("Error fetching tasks:", error);
     }
 };
 
@@ -155,10 +180,25 @@ const toggleEdit = async () => {
     isEditing.value = !isEditing.value;
 }
 
+const isTaskCreateModalVisible = ref(false);
+
+const openTaskCreateModal = () => {
+    isTaskCreateModalVisible.value = true;
+};
+
+const closeTaskCreateModal = () => {
+    isTaskCreateModalVisible.value = false;
+};
+
+const addTask = (newTask: TaskModel) => {
+    eventTasks.value.push(newTask);
+};
+
 onMounted(async () => {
     isActive.value = true;
     await fetchEvent();
     await fetchGroupEventTypes();
+    await fetchTasks();
 
     if (backButton.show) {
         backButton.show();
@@ -251,6 +291,12 @@ li {
     cursor: pointer;
 }
 
+.tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 .edit-input,
 .edit-textarea,
 .edit-select {
@@ -261,5 +307,19 @@ li {
     border: 1px solid #ccc;
     border-radius: 8px;
     background: transparent;
+}
+
+.big-button {
+    width: 100%;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1em;
+    color: #fff;
+    background-color: v-bind('themeParams.button_color');
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    justify-content: center;
+    justify-self: center;
 }
 </style>

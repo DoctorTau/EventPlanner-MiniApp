@@ -1,4 +1,5 @@
 export interface Participant {
+    id: number;
     telegramId: number;
     username: string;
     firstName: string;
