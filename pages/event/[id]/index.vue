@@ -70,6 +70,14 @@
             @close="closeTaskCreateModal" />
 
         <PlanComponent v-if="eventItem" :eventId="eventItem.id" />
+
+        <div style="display: flex; justify-content: center;">
+            <button class="MessageButton" @click="sendMessage">
+                <Icon :name="mailIcon" size="32" />
+            </button>
+        </div>
+
+
     </div>
 </template>
 
@@ -97,6 +105,8 @@ const editableDescription = ref('');
 const editableEventType = ref(0);
 
 const isActive = ref(true);
+
+const mailIcon = ref('material-symbols:mail');
 
 const returnToPrevPage = () => {
     window.history.back();
@@ -192,6 +202,11 @@ const closeTaskCreateModal = () => {
 
 const addTask = (newTask: TaskModel) => {
     eventTasks.value.push(newTask);
+};
+
+const sendMessage = async () => {
+    const serverRequest = await ServerRequest.getInstance();
+    await serverRequest.post(`/api/Event/${route.params.id}/sendMessage`, {});
 };
 
 onMounted(async () => {
@@ -321,5 +336,20 @@ li {
     cursor: pointer;
     justify-content: center;
     justify-self: center;
+}
+
+.MessageButton {
+    background-color: v-bind('themeParams.button_color');
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 10px;
+    width: 50%;
 }
 </style>
