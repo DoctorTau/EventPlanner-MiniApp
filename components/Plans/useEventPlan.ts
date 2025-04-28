@@ -20,8 +20,8 @@ export function useEventPlan(eventId: number) {
             await updatePlanComponent(text);
         } catch (error) {
             console.error('Error loading event plan:', error);
-            markdownText.value = 'Failed to load event plan.';
-            renderedMarkdown.value = '<p><em>Failed to load event plan.</em></p>';
+            markdownText.value = '';
+            renderedMarkdown.value = '';
         } finally {
             loading.value = false;
         }

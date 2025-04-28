@@ -74,7 +74,7 @@ const GeneratePlan = async () => {
                 user_comment: userPrompt.value,
             });
         } else {
-            await serverRequest.post(`/api/Event/${props.eventId}/generatePlan`, { content: userPrompt.value });
+            await serverRequest.post(`/api/Event/${props.eventId}/generatePlan`, userPrompt.value);
         }
 
         await fetchMarkdown();

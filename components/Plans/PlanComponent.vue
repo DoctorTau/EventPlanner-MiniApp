@@ -22,6 +22,7 @@ import { useRouter } from 'vue-router';
 
 const { themeParams } = useTheme();
 
+const router = useRouter();
 const props = defineProps({
     eventId: {
         type: Number,
@@ -36,7 +37,6 @@ onMounted(async () => {
 });
 
 const editPageRedirect = () => {
-    const router = useRouter();
     router.push(`/event/${props.eventId}/plan`);
 };
 

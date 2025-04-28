@@ -59,12 +59,12 @@
         </ul>
         <p v-else>No participants yet.</p>
 
+        <h2>Tasks</h2>
         <div class="tasks" v-if="eventTasks.length">
-            <h2>Tasks</h2>
             <TaskTile v-for="task in eventTasks" :key="task.id" :taskModel="task"></TaskTile>
 
-            <button @click="openTaskCreateModal" class="big-button">+ Create Task</button>
         </div>
+        <button @click="openTaskCreateModal" class="big-button">+ Create Task</button>
 
         <TaskCreate v-if="isTaskCreateModalVisible" :eventId="eventItem.id" @taskCreated="addTask"
             @close="closeTaskCreateModal" />
