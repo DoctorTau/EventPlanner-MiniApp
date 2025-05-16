@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      API_SERVER_BASE_URL: 'https://localhost:7237',
+      apiServerBaseUrl: process.env.API_SERVER_BASE_URL || 'http://localhost:8080'
     },
   },
 
@@ -14,7 +14,10 @@ export default defineNuxtConfig({
   vite: {
     server: {
       strictPort: false,
-      allowedHosts: ['.cloudpub.ru'],
+      allowedHosts: ['.drtau.me', '.cloudpub.ru'],
+    },
+    build: {
+      target: 'es2022'
     }
   },
 

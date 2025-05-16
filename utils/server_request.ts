@@ -16,7 +16,8 @@ class ServerRequest {
             const { useWebApp } = await import('vue-tg');
             const { initData } = useWebApp();
 
-            const baseURL = 'https://event-planner-api.cloudpub.ru';
+            const config = useRuntimeConfig()
+            const baseURL = config.public.apiServerBaseUrl as string;
             const headers: Record<string, string> = {
                 'Authorization': `TMiniApp ${initData}`,
                 'Content-Type': 'application/json'

@@ -21,7 +21,8 @@
     <p v-else>No locations suggested yet.</p>
   </div>
 
-  <MainButton v-if="pollItem?.status == PollStatus.Pending" @click="startLocationPoll" text="Start poll" />
+  <MainButton v-if="pollItem?.status == PollStatus.Pending && pollItem?.options.length > 1" @click="startLocationPoll"
+    text="Start poll" />
 </template>
 
 <script setup lang="ts">
